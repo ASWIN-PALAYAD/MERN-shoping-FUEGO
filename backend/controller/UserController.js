@@ -1,6 +1,8 @@
 const User = require('../models/UserModel');
 const ErrorHandler = require('../utils/ErrorHandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+const sendToken = require('../utils/jwtToken');
+const { json } = require('body-parser');
 
 //Register user
 exports.createUser = catchAsyncErrors(async(req,res,next) =>{
@@ -16,12 +18,8 @@ exports.createUser = catchAsyncErrors(async(req,res,next) =>{
         }
     })
 
-    const token = user.getJwtToken()
+    sendToken(user,201,res)
 
-    res.status(201).json({
-        success:true,
-        token
-    })
 });
 
 //login User
@@ -44,11 +42,22 @@ exports.loginUser = catchAsyncErrors(async (req,res,next)=>{
         return next(new ErrorHandler("you are entered a wrong password",401));
     }
 
-    const token = user.getJwtToken();
+    sendToken(user,200,res)
 
+   
+});
 
-    res.status(201).json({
+//logout user
+exports.logoutUser = catchAsyncErrors(async (req,res,next) =>{
+    res.cookie("token",null,{
+        expires: new Date(Date.now()),
+        httpOnly:true,
+    });
+
+    res.status(200).json({
         success:true,
-        token,
-    })
-})
+        message:'Logout successfully',
+
+    });
+});
+
